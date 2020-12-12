@@ -1,3 +1,12 @@
+# Sleep for 10 seconds for the phone to start up properly, make sure to change the sleep time with respect to your device
+sleep 10
+# Set no executable permission on /data/local/tmp except for root user
+chmod 0000 /data/local/tmp/
+# Mount the /system partition as read-only
+mount -o ro,remount /system
+# change the ownership of /data/local/tmp to root only
+chown 0.0 /data/local/tmp
+
 # Hardened iptable rules
 iptables -t nat -F
 iptables -t nat -X
@@ -121,9 +130,9 @@ iptables -I OUTPUT -p udp -m multiport --sports 8443 -j DROP
 
 ## Tether settings
 
-## Uncomment the following 17 lines for blocking all internet connections to every app on phone while tethering.
+## Uncomment the following 17 or 18 lines for blocking all internet connections to every app on phone while tethering.
 
-# if you're using uid based data blocking for apps, to get the uid's of all the apps, use this script
+# We'll be using uid based internet access blocking for Android apps since Anroid implements SELinux policies. To get the uid's of all the apps, use this script
 
 #for i in $(pm list packages | sed 's/package://g'); do
 #	pm dump $i | grep userId | awk '{ print $1 }' | sed 's/userId=//g' | grep -v launch >> /path/to/uid.txt
@@ -150,3 +159,7 @@ iptables -I OUTPUT -p udp -m multiport --sports 8443 -j DROP
 svc data disable
 # Disable wifi after boot
 svc wifi disable
+# Disable adb access after boot, and unmount adb
+umount /dev/usb-ffs/adb
+# Disable executable permission for all busybox binaries if you're using magisk as your root manager
+chmod 0000 /sbin/.magisk/busybox/*

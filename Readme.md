@@ -4,11 +4,11 @@ I had been using these rules for 6 months or so on both my rooted Android kernel
 
 ### Rules included on the **simplified.sh** script
 
-The `simplified.sh` rules are pretty straightforward. Basically drop everything but accept anything on port 443(https) and 80(http) for general web browsing. Also dropping all connections for ipv6 addresses. For Android devices running kernel > 4.x you can replace `-m state --state` with `-m conntrack --ctstate` because conntrack does a more granular level packet filtering compared to prior rule, and the phone I have, which I ended up using as a router, has kernel version of 3.10, hence conntrack wasn't baked into iptables binary at that time. Now, with `simplified.sh` on Android devices, you'll be able to surf the internet, without any issues(hopefully, if you do, make sure to open an issue) while using mobile data and wifi. The same goes for Linux, just normal web browsing.
+The `simplified.sh` rules are pretty straightforward. Basically drop everything but accept anything on port 443(https) and 80(http) for general web browsing. Also dropping all connections for ipv6 addresses. For Android devices running kernel > 4.x you can replace `-m state --state` with `-m conntrack --ctstate` because conntrack does a more granular level packet filtering compared to `-m state --state` rule, and the phone I have, which I ended up using as a router, has kernel version of 3.10, hence conntrack wasn't baked into iptables binary at that time. Now, with `simplified.sh` on Android devices, you'll be able to surf the internet, without any issues(hopefully, if you do, make sure to open an issue) while using mobile data and wifi. The same goes for Linux, just normal web browsing.
 
 ## Rules included on the `simple_plus.sh` script
  
-The `simple_plus` rules are basically `simplified.sh` but with some extra stuffs. Some of the rules were adopted from custom scripts on afwall+ github wiki page. For instance, 
+The `simple_plus` rules are basically `simplified.sh` but with some extra stuffs. Some of the rules were adopted from custom scripts on afwall(https://github.com/ukanth/afwall)+ github wiki page. For instance, 
 
 1. The `iptables -I INPUT -p 41 -j DROP` means drop everything that masks as ipv4 in the form of ipv6.
 
@@ -24,13 +24,13 @@ For this I had to do a bit of googling and had to include a bunch of extra rules
 
 **I've had no issues with dnscrypt-proxy to work with these rules, make sure to include `iptables -I OUTPUT -p udp --sport 443 -j ACCEPT` in your set of rules. I used dnsfilter to route everything through dnscrypt. Always have loopback accepted when using dnscrypt**
 
-***If you're planning to use these rules for access point/hotspot, make sure to make the default policies for INPUT, OUTPUT and FORWARD as accept like so,***
+***If you're planning to use these rules for usb-tether/access-point/hotspot, make sure to make the default policies for INPUT, OUTPUT and FORWARD as accept like so,***
 
 `iptables -P INPUT -j ACCEPT`
 `iptables -P OUTPUT -j ACCEPT`
 `iptables -P FORWARD -j ACCEPT`
 
-Also, if your Android OS supports init scripts or if you're using magisk as root manager, you can use `init-rules.sh` script to start the script at boot time. I've included sleep 10, which is the time my phone takes to proprerly complete poweron. The reason I included a sleep interval is because the rules get overwritten by the time the phone is completely on, at least that happens for me(probably SELinux stuff), If you happen to use magisk, you can put this script with chmod 777 and place it in `/data/adb/service.d/`.
+Also, if your Android OS supports init scripts or if you're using magisk as root manager, you can use `init-rules.sh` script to start the script at boot time. I've included sleep 10, which is the time my phone takes to proprerly startup. The reason I included a sleep interval is because the rules get overwritten by the time the phone is completely on, at least that happens for me(probably SELinux stuff), If you happen to use magisk, you can put this script with `chmod 0700` and place it under `/data/adb/service.d/`.
 
 The script sleeps for 10 seconds for the phone to properly boot up, then mounts /system partition as read-only, then applies all the rules.
 
@@ -38,7 +38,7 @@ I've been searching for a while on iptables for Android, and just came up with t
 
 **Also**
 
-I came up with this script to block apps with iptables based on their uuId.
+I came up with this script to block apps with iptables based on their uids.
 You could use `pm dump 'package name' | grep userId` to get the userId of the apps. For example, to get the userId of Chrome browser you'd have to type,
 
 `pm dump com.android.chrome | grep userId` and this should give you the userId of chrome. Now, to actually block chrome from accessing the internet, you'd type in, 
@@ -47,15 +47,17 @@ You could use `pm dump 'package name' | grep userId` to get the userId of the ap
 `iptables -I OUTPUT -m owner --uid-owner 'chrome uid' -j DROP`
 `iptables -I FORWARD -m owner --uid-owner 'chrome uid' -j DROP`
 
-Now, if you're planning to use your phone for tether/hotspot, and want all apps to not access the internet, you'd have to first gather uuid for all the apps on your phone, to do that, you could use a for loop to cat out all the uids to a text file, like so;
+Where `chrome uid` is the uid number of your chrome browser.
+
+Now, if you're planning to use your phone for tether/hotspot, and want all apps to not access the internet, accept the device you're tethering to, you'd have to first gather uuid for all the apps on your phone, and block them. To do that, you could use a for loop to cat out all the uids to a text file, like so;
 
 `for i in $(pm list packages | sed 's/package://g'); do
 	pm dump $i | grep userId | awk '{ print $1 }' | sed 's/userId=//g' | grep -v launch >> uids.txt
 done`
 
-This should dump all the uid's to a txt file. Remember to have `awk` and `sed` binaries set to your executable path
+This should dump all the uid's to a txt file. Remember to have `awk` and `sed` binaries set to your executable path.
 
-Now, to block literally everything, you'd type in;
+Now, to block all internet access to literally everything, you'd type in;
 
 `for i in $(cat path/to/uids.txt); do
 	iptables -I INPUT -m owner --uid-owner $i -j DROP
@@ -63,7 +65,18 @@ Now, to block literally everything, you'd type in;
 	iptables -I FORWARD -m owner --uid-owner $i -j DROP
 done`
 
+And to block internet access to root uid, just do;
+
+`for i in $(cat path/to/uids.txt); do
+	iptables -I INPUT -m owner --uid-owner 0 -j DROP
+	iptables -I OUTPUT -m owner --uid-owner 0 -j DROP
+	iptables -I FORWARD -m owner --uid-owner 0 -j DROP
+done`
+
+However, I'm pretty sure uid.txt would have userId 0 already included. 
+
 This should probably do the job fine.
 
+### For open-source apps recommendations and more check out this(https://github.com/samiuljoy/android-recommendations) repository.
 
 ### Feel free to open issues
