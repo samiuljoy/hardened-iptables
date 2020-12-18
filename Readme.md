@@ -80,3 +80,5 @@ This should probably do the job fine.
 ### For open-source apps recommendations and more check out this(https://github.com/samiuljoy/android-recommendations) repository.
 
 ### Feel free to open issues
+
+Feel free to support at [bitcoin] 13erq7DDXDuqqBohht3UNyuJCXtpJcWGSe
