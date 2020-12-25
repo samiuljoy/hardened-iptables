@@ -25,10 +25,11 @@ For this I had to do a bit of googling and had to include a bunch of extra rules
 **I've had no issues with dnscrypt-proxy to work with these rules, make sure to include `iptables -I OUTPUT -p udp --sport 443 -j ACCEPT` in your set of rules. I used dnsfilter to route everything through dnscrypt. Always have loopback accepted when using dnscrypt**
 
 ***If you're planning to use these rules for usb-tether/access-point/hotspot, make sure to make the default policies for INPUT, OUTPUT and FORWARD as accept like so,***
-
-`iptables -P INPUT -j ACCEPT`
-`iptables -P OUTPUT -j ACCEPT`
-`iptables -P FORWARD -j ACCEPT`
+```sh
+iptables -P INPUT -j ACCEPT
+iptables -P OUTPUT -j ACCEPT
+iptables -P FORWARD -j ACCEPT
+```
 
 Also, if your Android OS supports init scripts or if you're using magisk as root manager, you can use `init-rules.sh` script to start the script at boot time. I've included sleep 10, which is the time my phone takes to proprerly startup. The reason I included a sleep interval is because the rules get overwritten by the time the phone is completely on, at least that happens for me(probably SELinux stuff), If you happen to use magisk, you can put this script with `chmod 0700` and place it under `/data/adb/service.d/`.
 
@@ -43,35 +44,41 @@ You could use `pm dump 'package name' | grep userId` to get the userId of the ap
 
 `pm dump com.android.chrome | grep userId` and this should give you the userId of chrome. Now, to actually block chrome from accessing the internet, you'd type in, 
 
-`iptables -I INPUT -m owner --uid-owner 'chrome uid' -j DROP`
-`iptables -I OUTPUT -m owner --uid-owner 'chrome uid' -j DROP`
-`iptables -I FORWARD -m owner --uid-owner 'chrome uid' -j DROP`
-
+```sh
+iptables -I INPUT -m owner --uid-owner 'chrome uid' -j DROP
+iptables -I OUTPUT -m owner --uid-owner 'chrome uid' -j DROP
+iptables -I FORWARD -m owner --uid-owner 'chrome uid' -j DROP
+```
 Where `chrome uid` is the uid number of your chrome browser.
 
 Now, if you're planning to use your phone for tether/hotspot, and want all apps to not access the internet, accept the device you're tethering to, you'd have to first gather uuid for all the apps on your phone, and block them. To do that, you could use a for loop to cat out all the uids to a text file, like so;
 
-`for i in $(pm list packages | sed 's/package://g'); do
+```sh
+for i in $(pm list packages | sed 's/package://g'); do
 	pm dump $i | grep userId | awk '{ print $1 }' | sed 's/userId=//g' | grep -v launch >> uids.txt
-done`
+done
+```
 
 This should dump all the uid's to a txt file. Remember to have `awk` and `sed` binaries set to your executable path.
 
 Now, to block all internet access to literally everything, you'd type in;
-
-`for i in $(cat path/to/uids.txt); do
+```
+for i in $(cat path/to/uids.txt); do
 	iptables -I INPUT -m owner --uid-owner $i -j DROP
 	iptables -I OUTPUT -m owner --uid-owner $i -j DROP
 	iptables -I FORWARD -m owner --uid-owner $i -j DROP
-done`
+done
+```
 
 And to block internet access to root uid, just do;
 
-`for i in $(cat path/to/uids.txt); do
+```sh
+for i in $(cat path/to/uids.txt); do
 	iptables -I INPUT -m owner --uid-owner 0 -j DROP
 	iptables -I OUTPUT -m owner --uid-owner 0 -j DROP
 	iptables -I FORWARD -m owner --uid-owner 0 -j DROP
-done`
+done
+```
 
 However, I'm pretty sure uid.txt would have userId 0 already included. 
 
