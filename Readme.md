@@ -62,7 +62,8 @@ done
 This should dump all the uid's to a txt file. Remember to have `awk` and `sed` binaries set to your executable path.
 
 Now, to block all internet access to literally everything, you'd type in;
-```
+
+```sh
 for i in $(cat path/to/uids.txt); do
 	iptables -I INPUT -m owner --uid-owner $i -j DROP
 	iptables -I OUTPUT -m owner --uid-owner $i -j DROP
