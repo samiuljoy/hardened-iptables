@@ -19,7 +19,7 @@ iptables -P FORWARD DROP
 iptables -P INPUT DROP
 iptables -P OUTPUT DROP
 
-## Accept aything on loopback
+## Accept anything on loopback
 iptables -I INPUT -i lo -j ACCEPT
 iptables -I OUTPUT -o lo -j ACCEPT
 
@@ -86,7 +86,7 @@ iptables -A OUTPUT -m string --algo bm --hex-string '|28 29 20 7B|' -j DROP
 iptables -A OUTPUT -m string --algo bm --hex-string '|28 29 20 7B|' -j DROP
 ip6tables -A OUTPUT -m string --algo bm --hex-string '|28 29 20 7B|' -j DROP
 
-# Arbitary suspicious port blocking.
+# Arbitrary suspicious port blocking.
 iptables -I INPUT -p tcp -m multiport --dports 21,23,22,2022,2222,8022,5901,5222,5228,1234,12345,8080,8006,9050,9090 -j DROP
 iptables -I FORWARD -p tcp -m multiport --dports 21,23,22,2022,2222,8022,5901,5222,5228,1234,12345,8080,8006,9050,9090 -j DROP
 iptables -I INPUT -p tcp -m multiport --sports 21,23,22,2022,2222,8022,5901,5222,5228,1234,12345,8080,8006,9050,9090 -j DROP
@@ -106,7 +106,7 @@ iptables -I OUTPUT -p udp -m multiport --sports 21,23,22,2022,2222,8022,5901,522
 #iptables -I mobile -p tcp -m multiport --dports 21,23,22,2022,2222,8022,5901,5222,5228,1234,12345,8080,8006,9050,9090 -j DROP
 #
 
-# Dropping evetything only on port 8443 because maximum multiport limit is 15
+# Dropping everything only on port 8443 because maximum multiport limit is 15
 iptables -I INPUT -p tcp -m multiport --dports 8443 -j DROP
 iptables -I FORWARD -p tcp -m multiport --dports 8443 -j DROP
 iptables -I FORWARD -p tcp -m multiport --sports 8443 -j DROP
@@ -132,7 +132,7 @@ iptables -I OUTPUT -p udp -m multiport --sports 8443 -j DROP
 
 ## Uncomment the following 17 or 18 lines for blocking all internet connections to every app on phone while tethering.
 
-# We'll be using uid based internet access blocking for Android apps since Anroid implements SELinux policies. To get the uid's of all the apps, use this script
+# We'll be using uid based internet access blocking for Android apps since Android implements SELinux policies. To get the uid's of all the apps, use this script
 
 #for i in $(pm list packages | sed 's/package://g'); do
 #	pm dump $i | grep userId | awk '{ print $1 }' | sed 's/userId=//g' | grep -v launch >> /path/to/uid.txt
@@ -150,7 +150,7 @@ iptables -I OUTPUT -p udp -m multiport --sports 8443 -j DROP
 #iptables -I OUTPUT -m owner --uid-owner 0 -j DROP
 #iptables -I FORWARD -m owner --uid-owner 0 -j DROP
 
-# When done, make sure to chang the iptables policies to accept like so;
+# When done, make sure to change the iptables policies to accept like so;
 #iptables -P INPUT ACCEPT
 #iptables -P OUTPUT ACCEPT
 #iptables -P FORWARD ACCEPT

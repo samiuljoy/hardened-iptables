@@ -1,4 +1,4 @@
-## CLear all rules
+## Clear all rules
 iptables -F
 iptables -X
 iptables -t nat -F

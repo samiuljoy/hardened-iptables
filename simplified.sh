@@ -1,4 +1,4 @@
-## CLear all rules
+## Clear all rules
 iptables -F
 iptables -X
 iptables -t nat -F
@@ -26,7 +26,7 @@ iptables -I OUTPUT -o lo -j ACCEPT
 iptables -I OUTPUT -p udp -j ACCEPT
 
 ## Alternatively, you can set the rule to accept only on udp port 67 or 53 just for DNS requests, and basically drop everything else
-# iptables -I INPUT -p udp -m multoport --dports 53,67 -j ACCEPT
+# iptables -I INPUT -p udp -m multiport --dports 53,67 -j ACCEPT
 
 ## Accept input for udp, but only related and established
 iptables -I INPUT -p udp -m state --state RELATED,ESTABLISHED -j ACCEPT
