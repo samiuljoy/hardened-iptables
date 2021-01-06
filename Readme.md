@@ -89,4 +89,4 @@ This should probably do the job fine.
 
 ### Feel free to open issues
 
-Feel free to support at [bitcoin] 13erq7DDXDuqqBohht3UNyuJCXtpJcWGSe
+Feel free to support with [bitcoin] 13erq7DDXDuqqBohht3UNyuJCXtpJcWGSe
